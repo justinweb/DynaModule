@@ -7,11 +7,11 @@ using KGI.IT.Der.DynaModuleBase;
 namespace DynaModuleImpl
 {
     #region 實作DynaModule
-    public class DynaModuleA : IDynaModule
+    public class DynaModuleA : IDynaModule<DynaModuleSettingA>
     {
         #region IDynaModule 成員
 
-        public bool Init(IDynaModuleSetting setting, ref string msg)
+        public bool Init(DynaModuleSettingA setting, ref string msg)
         {
             msg = "Test Error";
             return true;
@@ -20,7 +20,7 @@ namespace DynaModuleImpl
         #endregion
     }
 
-    public class DynaModuleSettingA : IDynaModuleSetting
+    public class DynaModuleSettingA
     {
         public string ServiceCode
         {

@@ -52,23 +52,23 @@ namespace KGI.IT.Der.DynaModuleBase
     /// <summary>
     /// 支援動態載入模組的介面
     /// </summary>
-    public interface IDynaModule
+    public interface IDynaModule<TSetting>
     {
         /// <summary>
         /// 初始化
         /// </summary>
-        /// <param name="setting">設定檔(實作的模組需要自行轉型成自己的設定檔型別)</param>
+        /// <param name="setting">設定檔</param>
         /// <param name="msg">錯誤訊息</param>
         /// <returns>成功與否</returns>
-        bool Init(IDynaModuleSetting setting, ref string msg);
+        bool Init(TSetting setting, ref string msg);
     }
 
-    /// <summary>
-    /// 動態載入模組的設定值
-    /// </summary>
-    public interface IDynaModuleSetting
-    {        
-    }
+    ///// <summary>
+    ///// 動態載入模組的設定值
+    ///// </summary>
+    //public interface IDynaModuleSetting
+    //{        
+    //}
 
     public interface IDynaModuleSettingLoader<TSetting>
     {
@@ -107,12 +107,13 @@ namespace KGI.IT.Der.DynaModuleBase
     /// <summary>
     /// 動態模組管理員
     /// </summary>
-    public class DynaModuleManager
+    /// <typeparam name="TSetting">要使用的設定檔介面型別</typeparam> 
+    public class DynaModuleManager<TSetting> 
     {
         /// <summary>
         /// 回報載入時發生錯誤的事件
         /// </summary>
-        public event Action<IDynaModule, string> OnError = null;
+        public event Action<IDynaModule<TSetting>, string> OnError = null;
 
         /// <summary>
         /// 載入動態模組
@@ -120,9 +121,8 @@ namespace KGI.IT.Der.DynaModuleBase
         /// <typeparam name="T">實際實作IDynaModule的型別</typeparam> 
         /// <param name="pi1"></param>
         /// <returns></returns>
-        public List<T> Load<T,TSetting>(PluginInfo pi1) 
-            where T : IDynaModule 
-            where TSetting : IDynaModuleSetting 
+        public List<T> Load<T>(PluginInfo pi1) 
+            where T : IDynaModule<TSetting>            
         {
             List<T> result = new List<T>();
 

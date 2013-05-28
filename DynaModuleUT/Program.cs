@@ -26,16 +26,19 @@ namespace DynaModuleUT
             sp.Settings.Add(sb);
             sp.Settings.Add(sc);
 
-            XmlHelper.Save("TmpSetting.xml", sp);
+            if (XmlHelper.Save("TmpSetting.xml", sp) == false)
+            {
+                Console.WriteLine("Save setting file failed"); 
+            }
 
-            DynaModuleManager manager = new DynaModuleManager();
-            manager.OnError += new Action<IDynaModule, string>(manager_OnError);
+            DynaModuleManager<DynaModuleSettingA> manager = new DynaModuleManager<DynaModuleSettingA>();
+            manager.OnError += new Action<IDynaModule<DynaModuleSettingA> , string>(manager_OnError);
             PluginInfo pi1 = new PluginInfo() { AssemblyFile = "DynaModuleImpl.dll", CreateType = "DynaModuleImpl.DynaModuleA", SettingLoaderType = "DynaModuleImpl.DynaModuleALoader", SettingFile = "TmpSetting.xml" };
 
-            List<DynaModuleA> result = manager.Load<DynaModuleA,DynaModuleSettingA>(pi1);
+            List<DynaModuleA> result = manager.Load<DynaModuleA>(pi1);
         }
 
-        static void manager_OnError(IDynaModule module, string msg)
+        static void manager_OnError(IDynaModule<DynaModuleSettingA> module, string msg)
         {
             Console.WriteLine("Load IDynaModule [{0}] failed with {1}", module, msg);
         }
