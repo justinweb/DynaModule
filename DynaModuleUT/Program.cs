@@ -21,7 +21,8 @@ namespace DynaModuleUT
             DynaModuleSettingA sa = new DynaModuleSettingA() { ServiceCode = "SettingA" };
             DynaModuleSettingA sb = new DynaModuleSettingA() { ServiceCode = "SettingB" };
             DynaModuleSettingA sc = new DynaModuleSettingA() { ServiceCode = "SettingC" };
-            DynaModuleASettingPool sp = new DynaModuleASettingPool();
+            //DynaModuleASettingPool sp = new DynaModuleASettingPool();
+            DynaModuleSettingPool<DynaModuleSettingA> sp = new DynaModuleSettingPool<DynaModuleSettingA>(); 
             sp.Settings.Add(sa);
             sp.Settings.Add(sb);
             sp.Settings.Add(sc);

@@ -86,6 +86,20 @@ namespace KGI.IT.Der.DynaModuleBase
             get { return MySetting; } 
         }
     }
+
+    public class DynaModuleLoaderImpl<TSetting> : IDynaModuleSettingLoader<TSetting> where TSetting : IDynaModuleSetting
+    {
+        #region IDynaModuleSettingLoader<TSetting> 成員
+
+        public IEnumerable<TSetting> LoadFromFile(string file)
+        {
+            DynaModuleSettingPool<TSetting> pool = XmlHelper.Load<DynaModuleSettingPool<TSetting>>(file);
+
+            return pool.Settings;
+        }
+
+        #endregion
+    }
     
 #else
     /// <summary>

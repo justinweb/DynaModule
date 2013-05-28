@@ -31,26 +31,8 @@ namespace DynaModuleImpl
     }
 
 #if _NET_4_
-    public class DynaModuleASettingPool : DynaModuleSettingPool<DynaModuleSettingA>
-    {       
-    }
-
-    public class DynaModuleALoader : IDynaModuleSettingLoader<DynaModuleSettingA> 
+    public class DynaModuleALoader : DynaModuleLoaderImpl<DynaModuleSettingA>
     {
-        #region IDynModuleSettingLoader 成員
-
-        public IEnumerable<DynaModuleSettingA> LoadFromFile(string file)
-        {
-            DynaModuleASettingPool pool = XmlHelper.Load<DynaModuleASettingPool>(file);
-            if (pool != null)
-            {
-                return pool.Settings;
-            }
-            else
-                return null;
-        }
-
-        #endregion
     }
 #else
     public class DynaModuleALoader : IDynaModuleSettingLoader
@@ -81,26 +63,5 @@ namespace DynaModuleImpl
     }
 #endif
 
-    public interface GDynaModuleSettingPool<T> where T : IDynaModuleSetting
-    {
-        List<T> Settings
-        {
-            get;
-        }
-    }
-
-    public class GImplSettingPoolA : GDynaModuleSettingPool<DynaModuleSettingA>
-    {
-        public List<DynaModuleSettingA> MySettings = new List<DynaModuleSettingA>(); 
-
-        #region GDynaModuleSettingPool<DynaModuleSettingA> 成員
-
-        public List<DynaModuleSettingA> Settings
-        {
-            get { return MySettings; }
-        }
-
-        #endregion
-    }
     #endregion
 }
