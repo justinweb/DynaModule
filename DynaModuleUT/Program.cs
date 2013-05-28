@@ -1,5 +1,4 @@
-﻿#define _NET_4_
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,11 +31,8 @@ namespace DynaModuleUT
             DynaModuleManager manager = new DynaModuleManager();
             manager.OnError += new Action<IDynaModule, string>(manager_OnError);
             PluginInfo pi1 = new PluginInfo() { AssemblyFile = "DynaModuleImpl.dll", CreateType = "DynaModuleImpl.DynaModuleA", SettingLoaderType = "DynaModuleImpl.DynaModuleALoader", SettingFile = "TmpSetting.xml" };
-#if _NET_4_
+
             List<DynaModuleA> result = manager.Load<DynaModuleA,DynaModuleSettingA>(pi1);
-#else
-            List<DynaModuleA> result = manager.Load<DynaModuleA>(pi1);
-#endif
         }
 
         static void manager_OnError(IDynaModule module, string msg)

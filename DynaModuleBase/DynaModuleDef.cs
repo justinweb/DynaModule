@@ -1,5 +1,4 @@
-﻿#define _NET_4_
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -71,13 +70,15 @@ namespace KGI.IT.Der.DynaModuleBase
     {        
     }
 
-#if _NET_4_
-    public interface IDynaModuleSettingLoader<TSetting> where TSetting : IDynaModuleSetting 
+    public interface IDynaModuleSettingLoader<TSetting>
     {
         IEnumerable<TSetting> LoadFromFile(string file); 
     }
-
-    public class DynaModuleSettingPool<TSetting> where TSetting : IDynaModuleSetting
+    /// <summary>
+    /// 設定檔的XML序列化及反序列化類別，用來儲存及讀取設定檔用的
+    /// </summary>
+    /// <typeparam name="TSetting"></typeparam>
+    public class DynaModuleSettingPool<TSetting>
     {
         private List<TSetting> MySetting = new List<TSetting>();
 
@@ -87,7 +88,7 @@ namespace KGI.IT.Der.DynaModuleBase
         }
     }
 
-    public class DynaModuleLoaderImpl<TSetting> : IDynaModuleSettingLoader<TSetting> where TSetting : IDynaModuleSetting
+    public class DynaModuleLoaderImpl<TSetting> : IDynaModuleSettingLoader<TSetting> 
     {
         #region IDynaModuleSettingLoader<TSetting> 成員
 
@@ -99,22 +100,8 @@ namespace KGI.IT.Der.DynaModuleBase
         }
 
         #endregion
-    }
-    
-#else
-    /// <summary>
-    /// 設定檔載入器
-    /// </summary>
-    public interface IDynaModuleSettingLoader
-    {
-        /// <summary>
-        /// 由檔案載入後，會提供一個IEnumerable<>的列舉器給載入函式來取得所有的設定值
-        /// </summary>
-        /// <param name="file">設定檔名稱</param>
-        /// <returns></returns>
-        IEnumerable<IDynaModuleSetting> LoadFromFile(string file);
-    }
-#endif
+    }    
+
     #endregion
     
     /// <summary>
@@ -127,7 +114,6 @@ namespace KGI.IT.Der.DynaModuleBase
         /// </summary>
         public event Action<IDynaModule, string> OnError = null;
 
-#if _NET_4_
         /// <summary>
         /// 載入動態模組
         /// </summary>
@@ -171,49 +157,6 @@ namespace KGI.IT.Der.DynaModuleBase
 
             return result;
         }
-#else
-        /// <summary>
-        /// 載入動態模組
-        /// </summary>
-        /// <typeparam name="T">實際實作IDynaModule的型別</typeparam> 
-        /// <param name="pi1"></param>
-        /// <returns></returns>
-        public List<T> Load<T>(PluginInfo pi1) where T : IDynaModule
-        {
-            List<T> result = new List<T>();
-
-            Assembly aa = pi1.AssemblyFile.Length > 0 ? Assembly.LoadFrom(pi1.AssemblyFile) : Assembly.GetExecutingAssembly();
-            // SettingLoaderType是實作IDynModuleSettingLoader的實體類別
-            ObjectHandle oSetting = Activator.CreateInstance(aa.FullName, pi1.SettingLoaderType);
-            if (oSetting != null && oSetting.Unwrap() is IDynaModuleSettingLoader)
-            {
-                IDynaModuleSettingLoader loader = (IDynaModuleSettingLoader)oSetting.Unwrap();
-                IEnumerable<IDynaModuleSetting> settings = loader.LoadFromFile(pi1.SettingFile);
-
-                if (settings != null)
-                {
-                    string msg = "";
-                    foreach (IDynaModuleSetting set in settings)
-                    {
-                        // CreateType實作IDynaModule
-                        ObjectHandle o = Activator.CreateInstance(aa.FullName, pi1.CreateType);
-                        if (o != null && o.Unwrap() is T)
-                        {
-                            T job = (T)(o.Unwrap());
-                            if (job.Init(set, ref msg) == true)
-                                result.Add(job);
-                            else
-                            {
-                                if (OnError != null) OnError(job, msg);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-#endif
     }
 
     public sealed class XmlHelper
