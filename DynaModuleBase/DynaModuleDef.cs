@@ -52,7 +52,7 @@ namespace KGI.TW.Der.DynaModuleBase
     /// <summary>
     /// 支援動態載入模組的介面
     /// </summary>
-    public interface IDynaModule<TSetting>
+    public interface IDynaModule
     {
         /// <summary>
         /// 初始化
@@ -60,19 +60,23 @@ namespace KGI.TW.Der.DynaModuleBase
         /// <param name="setting">設定檔</param>
         /// <param name="msg">錯誤訊息</param>
         /// <returns>成功與否</returns>
-        bool Init(TSetting setting, ref string msg);
+        bool Init(IDynaModuleSetting setting, ref string msg);
     }
 
-    ///// <summary>
-    ///// 動態載入模組的設定值
-    ///// </summary>
-    //public interface IDynaModuleSetting
-    //{        
-    //}
-
-    public interface IDynaModuleSettingLoader<TSetting>
+    /// <summary>
+    /// 動態載入模組的設定值
+    /// </summary>
+    public interface IDynaModuleSetting
     {
-        IEnumerable<TSetting> LoadFromFile(string file); 
+        bool IsLoad
+        {
+            get;
+        }
+    }
+
+    public interface IDynaModuleSettingLoader
+    {
+        IEnumerable<IDynaModuleSetting> LoadFromFile(string file); 
     }
     /// <summary>
     /// 設定檔的XML序列化及反序列化類別，用來儲存及讀取設定檔用的
@@ -88,32 +92,37 @@ namespace KGI.TW.Der.DynaModuleBase
         }
     }
 
-    public class DynaModuleLoaderImpl<TSetting> : IDynaModuleSettingLoader<TSetting> 
-    {
-        #region IDynaModuleSettingLoader<TSetting> 成員
+    //public class DynaModuleLoaderImpl<TSetting> : IDynaModuleSettingLoader<TSetting> 
+    //{
+    //    #region IDynaModuleSettingLoader<TSetting> 成員
 
-        public IEnumerable<TSetting> LoadFromFile(string file)
-        {
-            DynaModuleSettingPool<TSetting> pool = XmlHelper.Load<DynaModuleSettingPool<TSetting>>(file);
+    //    public IEnumerable<TSetting> LoadFromFile(string file)
+    //    {
+    //        DynaModuleSettingPool<TSetting> pool = XmlHelper.Load<DynaModuleSettingPool<TSetting>>(file);
 
-            return pool.Settings;
-        }
+    //        return pool.Settings;
+    //    }
 
-        #endregion
-    }    
+    //    #endregion
+    //}    
 
     #endregion
+
+    public class DynaModuleInfo<TModule,TSetting>
+    {
+        public TModule Module = default(TModule);
+        public TSetting Setting = default(TSetting);
+    }
     
     /// <summary>
     /// 動態模組管理員
-    /// </summary>
-    /// <typeparam name="TSetting">要使用的設定檔介面型別</typeparam> 
-    public class DynaModuleManager<TSetting> 
+    /// </summary>    
+    public class DynaModuleManager
     {
         /// <summary>
         /// 回報載入時發生錯誤的事件
         /// </summary>
-        public event Action<IDynaModule<TSetting>, string> OnError = null;
+        public event Action<IDynaModule, string> OnError = null;
 
         /// <summary>
         /// 載入動態模組
@@ -121,38 +130,88 @@ namespace KGI.TW.Der.DynaModuleBase
         /// <typeparam name="T">實際實作IDynaModule的型別</typeparam> 
         /// <param name="pi1"></param>
         /// <returns></returns>
-        public List<T> Load<T>(PluginInfo pi1) 
-            where T : IDynaModule<TSetting>            
+        public List<IDynaModule> Load(PluginInfo pi1)                 
         {
-            List<T> result = new List<T>();
+            List<IDynaModule> result = new List<IDynaModule>();
 
-            Assembly aa = pi1.AssemblyFile.Length > 0 ? Assembly.LoadFrom(pi1.AssemblyFile) : Assembly.GetExecutingAssembly();
-            // SettingLoaderType是實作IDynModuleSettingLoader的實體類別
-            ObjectHandle oSetting = Activator.CreateInstance(aa.FullName, pi1.SettingLoaderType);
-            if (oSetting != null && oSetting.Unwrap() is IDynaModuleSettingLoader<TSetting>)
+            try
             {
-                IDynaModuleSettingLoader<TSetting> loader = (IDynaModuleSettingLoader<TSetting>)oSetting.Unwrap();
-                IEnumerable <TSetting> settings = loader.LoadFromFile(pi1.SettingFile);
-
-                if (settings != null)
+                Assembly aa = pi1.AssemblyFile.Length > 0 ? Assembly.LoadFrom(pi1.AssemblyFile) : Assembly.GetExecutingAssembly();
+                // SettingLoaderType是實作IDynModuleSettingLoader的實體類別
+                ObjectHandle oSetting = Activator.CreateInstance(aa.FullName, pi1.SettingLoaderType);
+                if (oSetting != null && oSetting.Unwrap() is IDynaModuleSettingLoader)
                 {
-                    string msg = "";
-                    foreach (TSetting set in settings)
+                    IDynaModuleSettingLoader loader = (IDynaModuleSettingLoader)oSetting.Unwrap();
+                    IEnumerable<IDynaModuleSetting> settings = loader.LoadFromFile(pi1.SettingFile);
+
+                    if (settings != null)
                     {
-                        // CreateType實作IDynaModule
-                        ObjectHandle o = Activator.CreateInstance(aa.FullName, pi1.CreateType);
-                        if (o != null && o.Unwrap() is T)
+                        string msg = "";
+                        foreach (IDynaModuleSetting set in settings)
                         {
-                            T job = (T)(o.Unwrap());
-                            if (job.Init(set, ref msg) == true)
-                                result.Add(job);
-                            else
+                            // 如果標示不載入的話
+                            if (set.IsLoad == false)
                             {
-                                if (OnError != null) OnError(job, msg);
+                                continue;
+                            }
+
+                            // CreateType實作IDynaModule
+                            ObjectHandle o = Activator.CreateInstance(aa.FullName, pi1.CreateType);
+                            if (o != null && o.Unwrap() is IDynaModule)
+                            {
+                                IDynaModule job = (IDynaModule)(o.Unwrap());
+                                if (job.Init(set, ref msg) == true)
+                                    result.Add(job);
+                                else
+                                {
+                                    if (OnError != null) OnError(job, msg);
+                                }
                             }
                         }
                     }
                 }
+            }
+            catch (Exception exp)
+            {
+            }
+
+            return result;
+        }
+
+        public List<DynaModuleInfo<T, IDynaModuleSetting>> LoadModuleInfo<T>(PluginInfo pi1)
+        {
+            List<DynaModuleInfo<T, IDynaModuleSetting>> result = new List<DynaModuleInfo<T, IDynaModuleSetting>>();
+
+            try
+            {
+                Assembly aa = pi1.AssemblyFile.Length > 0 ? Assembly.LoadFrom(pi1.AssemblyFile) : Assembly.GetExecutingAssembly();
+                // SettingLoaderType是實作IDynModuleSettingLoader的實體類別
+                ObjectHandle oSetting = Activator.CreateInstance(aa.FullName, pi1.SettingLoaderType);
+                if (oSetting != null && oSetting.Unwrap() is IDynaModuleSettingLoader)
+                {
+                    IDynaModuleSettingLoader loader = (IDynaModuleSettingLoader)oSetting.Unwrap();
+                    IEnumerable<IDynaModuleSetting> settings = loader.LoadFromFile(pi1.SettingFile);
+
+                    if (settings != null)
+                    {
+                        string msg = "";
+                        foreach (IDynaModuleSetting set in settings)
+                        {
+                            // CreateType實作IDynaModule
+                            ObjectHandle o = Activator.CreateInstance(aa.FullName, pi1.CreateType);
+                            if (o != null && o.Unwrap() is T)
+                            {
+                                T job = (T)(o.Unwrap());
+                              
+                                // Add to result
+                                result.Add(new DynaModuleInfo<T, IDynaModuleSetting>() { Module = job, Setting = set }); 
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception exp)
+            {
             }
 
             return result;
