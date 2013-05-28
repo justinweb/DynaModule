@@ -7,7 +7,7 @@ using System.Runtime.Remoting;
 using System.Xml.Serialization;
 using System.IO;
 
-namespace KGI.IT.Der.DynaModuleBase
+namespace KGI.TW.Der.DynaModuleBase
 { 
     #region 介面
     /// <summary>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using KGI.IT.Der.DynaModuleBase;
+using KGI.TW.Der.DynaModuleBase;
 
 namespace DynaModuleImpl
 {
