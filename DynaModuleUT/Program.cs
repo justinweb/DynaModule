@@ -11,10 +11,13 @@ namespace DynaModuleUT
     {
         static void Main(string[] args)
         {
-            DynaModuleALoader loader = new DynaModuleALoader();
-            bool isLoader = loader is IDynaModuleSettingLoader<DynaModuleSettingA>;  
+            //DynaModuleALoader loader = new DynaModuleALoader();
+            //bool isLoader = loader is IDynaModuleSettingLoader<DynaModuleSettingA>;  
 
-            UT_DynaModule();
+            //UT_DynaModule();
+
+            GeneralPlugin.SavePluginSet();
+            List<DynaModuleInfo<IModule, MyPluginSet>> result = GeneralPlugin.LoadPluginSet<MyPluginSet, IModule>("MyPlugIn.xml");
         }
 
         public static void UT_DynaModule()
@@ -33,20 +36,12 @@ namespace DynaModuleUT
             {
                 Console.WriteLine("Save setting file failed"); 
             }
-
-            DynaModuleManager manager = new DynaModuleManager();
-            manager.OnError += new Action<IDynaModule , string>(manager_OnError);
+                              
             PluginInfo pi1 = new PluginInfo() { AssemblyFile = "DynaModuleImpl.dll", CreateType = "DynaModuleImpl.DynaModuleA", SettingLoaderType = "DynaModuleImpl.DynaModuleALoader", SettingFile = "TmpSetting.xml" };
 
-            //List<IDynaModule> result = manager.Load(pi1);
-
-            List<DynaModuleInfo<DynaModuleA, DynaModuleSettingA>> result = manager.LoadModuleInfo<DynaModuleA, DynaModuleSettingA>(pi1);   
-        }
-
-        static void manager_OnError(IDynaModule module, string msg)
-        {
-            Console.WriteLine("Load IDynaModule [{0}] failed with {1}", module, msg);
-        }
+            string errMsg = "";
+            List<DynaModuleInfo<DynaModuleA, DynaModuleSettingA>> result = DynaModuleManager.LoadModuleInfo<DynaModuleA, DynaModuleSettingA>(pi1, ref errMsg );   
+        }       
     }
 }
 

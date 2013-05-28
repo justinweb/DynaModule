@@ -24,7 +24,7 @@ namespace KGI.TW.Der.DynaModuleBase
             set;
         }
         /// <summary>
-        /// 要載入的模組型別，需實作IDyanModule
+        /// 要載入的模組型別
         /// </summary>
         public string CreateType
         {
@@ -92,20 +92,6 @@ namespace KGI.TW.Der.DynaModuleBase
         }
     }
 
-    //public class DynaModuleLoaderImpl<TSetting> : IDynaModuleSettingLoader<TSetting> 
-    //{
-    //    #region IDynaModuleSettingLoader<TSetting> 成員
-
-    //    public IEnumerable<TSetting> LoadFromFile(string file)
-    //    {
-    //        DynaModuleSettingPool<TSetting> pool = XmlHelper.Load<DynaModuleSettingPool<TSetting>>(file);
-
-    //        return pool.Settings;
-    //    }
-
-    //    #endregion
-    //}    
-
     #endregion
 
     public class DynaModuleInfo<TModule,TSetting>
@@ -120,65 +106,13 @@ namespace KGI.TW.Der.DynaModuleBase
     public class DynaModuleManager
     {
         /// <summary>
-        /// 回報載入時發生錯誤的事件
+        /// 由PluginInfo中指定的資訊載入設定檔，並產生PluginInfo.CreateType所指定之型別的物件
         /// </summary>
-        public event Action<IDynaModule, string> OnError = null;
-
-        /// <summary>
-        /// 載入動態模組
-        /// </summary>
-        /// <typeparam name="T">實際實作IDynaModule的型別</typeparam> 
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TSetting"></typeparam>
         /// <param name="pi1"></param>
         /// <returns></returns>
-        public List<IDynaModule> Load(PluginInfo pi1)                 
-        {
-            List<IDynaModule> result = new List<IDynaModule>();
-
-            try
-            {
-                Assembly aa = pi1.AssemblyFile.Length > 0 ? Assembly.LoadFrom(pi1.AssemblyFile) : Assembly.GetExecutingAssembly();
-                // SettingLoaderType是實作IDynModuleSettingLoader的實體類別
-                ObjectHandle oSetting = Activator.CreateInstance(aa.FullName, pi1.SettingLoaderType);
-                if (oSetting != null && oSetting.Unwrap() is IDynaModuleSettingLoader<IDynaModuleSetting> )
-                {
-                    IDynaModuleSettingLoader<IDynaModuleSetting> loader = (IDynaModuleSettingLoader<IDynaModuleSetting>)oSetting.Unwrap();
-                    IEnumerable<IDynaModuleSetting> settings = loader.LoadFromFile(pi1.SettingFile);
-
-                    if (settings != null)
-                    {
-                        string msg = "";
-                        foreach (IDynaModuleSetting set in settings)
-                        {
-                            // 如果標示不載入的話
-                            if (set.IsLoad == false)
-                            {
-                                continue;
-                            }
-
-                            // CreateType實作IDynaModule
-                            ObjectHandle o = Activator.CreateInstance(aa.FullName, pi1.CreateType);
-                            if (o != null && o.Unwrap() is IDynaModule)
-                            {
-                                IDynaModule job = (IDynaModule)(o.Unwrap());
-                                if (job.Init(set, ref msg) == true)
-                                    result.Add(job);
-                                else
-                                {
-                                    if (OnError != null) OnError(job, msg);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception exp)
-            {
-            }
-
-            return result;
-        }
-
-        public List<DynaModuleInfo<T, TSetting>> LoadModuleInfo<T, TSetting>(PluginInfo pi1)
+        public static List<DynaModuleInfo<T, TSetting>> LoadModuleInfo<T, TSetting>(PluginInfo pi1, ref string errMsg )
         {
             List<DynaModuleInfo<T, TSetting>> result = new List<DynaModuleInfo<T, TSetting>>();
 
@@ -194,7 +128,6 @@ namespace KGI.TW.Der.DynaModuleBase
 
                     if (settings != null)
                     {
-                        string msg = "";
                         foreach (TSetting set in settings)
                         {
                             // CreateType實作IDynaModule
@@ -202,16 +135,25 @@ namespace KGI.TW.Der.DynaModuleBase
                             if (o != null && o.Unwrap() is T)
                             {
                                 T job = (T)(o.Unwrap());
-                              
+
                                 // Add to result
-                                result.Add(new DynaModuleInfo<T, TSetting>() { Module = job, Setting = set }); 
+                                result.Add(new DynaModuleInfo<T, TSetting>() { Module = job, Setting = set });
                             }
                         }
                     }
+                    else
+                    {
+                        errMsg = "載入設定檔錯誤";
+                    }
+                }
+                else
+                {
+                    errMsg = "指定的SettingLoaderType不是繼承自 " + typeof(IDynaModuleSettingLoader<TSetting>).ToString();
                 }
             }
             catch (Exception exp)
             {
+                errMsg = exp.Message;
             }
 
             return result;
