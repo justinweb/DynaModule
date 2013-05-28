@@ -11,6 +11,9 @@ namespace DynaModuleUT
     {
         static void Main(string[] args)
         {
+            DynaModuleALoader loader = new DynaModuleALoader();
+            bool isLoader = loader is IDynaModuleSettingLoader<DynaModuleSettingA>;  
+
             UT_DynaModule();
         }
 
@@ -37,7 +40,7 @@ namespace DynaModuleUT
 
             //List<IDynaModule> result = manager.Load(pi1);
 
-            List<DynaModuleInfo<DynaModuleA, IDynaModuleSetting>> result = manager.LoadModuleInfo<DynaModuleA>(pi1);   
+            List<DynaModuleInfo<DynaModuleA, DynaModuleSettingA>> result = manager.LoadModuleInfo<DynaModuleA, DynaModuleSettingA>(pi1);   
         }
 
         static void manager_OnError(IDynaModule module, string msg)

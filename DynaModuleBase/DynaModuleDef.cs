@@ -74,9 +74,9 @@ namespace KGI.TW.Der.DynaModuleBase
         }
     }
 
-    public interface IDynaModuleSettingLoader
+    public interface IDynaModuleSettingLoader<TSetting>
     {
-        IEnumerable<IDynaModuleSetting> LoadFromFile(string file); 
+        IEnumerable<TSetting> LoadFromFile(string file); 
     }
     /// <summary>
     /// 設定檔的XML序列化及反序列化類別，用來儲存及讀取設定檔用的
@@ -139,9 +139,9 @@ namespace KGI.TW.Der.DynaModuleBase
                 Assembly aa = pi1.AssemblyFile.Length > 0 ? Assembly.LoadFrom(pi1.AssemblyFile) : Assembly.GetExecutingAssembly();
                 // SettingLoaderType是實作IDynModuleSettingLoader的實體類別
                 ObjectHandle oSetting = Activator.CreateInstance(aa.FullName, pi1.SettingLoaderType);
-                if (oSetting != null && oSetting.Unwrap() is IDynaModuleSettingLoader)
+                if (oSetting != null && oSetting.Unwrap() is IDynaModuleSettingLoader<IDynaModuleSetting> )
                 {
-                    IDynaModuleSettingLoader loader = (IDynaModuleSettingLoader)oSetting.Unwrap();
+                    IDynaModuleSettingLoader<IDynaModuleSetting> loader = (IDynaModuleSettingLoader<IDynaModuleSetting>)oSetting.Unwrap();
                     IEnumerable<IDynaModuleSetting> settings = loader.LoadFromFile(pi1.SettingFile);
 
                     if (settings != null)
@@ -178,24 +178,24 @@ namespace KGI.TW.Der.DynaModuleBase
             return result;
         }
 
-        public List<DynaModuleInfo<T, IDynaModuleSetting>> LoadModuleInfo<T>(PluginInfo pi1)
+        public List<DynaModuleInfo<T, TSetting>> LoadModuleInfo<T, TSetting>(PluginInfo pi1)
         {
-            List<DynaModuleInfo<T, IDynaModuleSetting>> result = new List<DynaModuleInfo<T, IDynaModuleSetting>>();
+            List<DynaModuleInfo<T, TSetting>> result = new List<DynaModuleInfo<T, TSetting>>();
 
             try
             {
                 Assembly aa = pi1.AssemblyFile.Length > 0 ? Assembly.LoadFrom(pi1.AssemblyFile) : Assembly.GetExecutingAssembly();
                 // SettingLoaderType是實作IDynModuleSettingLoader的實體類別
                 ObjectHandle oSetting = Activator.CreateInstance(aa.FullName, pi1.SettingLoaderType);
-                if (oSetting != null && oSetting.Unwrap() is IDynaModuleSettingLoader)
+                if (oSetting != null && oSetting.Unwrap() is IDynaModuleSettingLoader<TSetting>)
                 {
-                    IDynaModuleSettingLoader loader = (IDynaModuleSettingLoader)oSetting.Unwrap();
-                    IEnumerable<IDynaModuleSetting> settings = loader.LoadFromFile(pi1.SettingFile);
+                    IDynaModuleSettingLoader<TSetting> loader = (IDynaModuleSettingLoader<TSetting>)oSetting.Unwrap();
+                    IEnumerable<TSetting> settings = loader.LoadFromFile(pi1.SettingFile);
 
                     if (settings != null)
                     {
                         string msg = "";
-                        foreach (IDynaModuleSetting set in settings)
+                        foreach (TSetting set in settings)
                         {
                             // CreateType實作IDynaModule
                             ObjectHandle o = Activator.CreateInstance(aa.FullName, pi1.CreateType);
@@ -204,7 +204,7 @@ namespace KGI.TW.Der.DynaModuleBase
                                 T job = (T)(o.Unwrap());
                               
                                 // Add to result
-                                result.Add(new DynaModuleInfo<T, IDynaModuleSetting>() { Module = job, Setting = set }); 
+                                result.Add(new DynaModuleInfo<T, TSetting>() { Module = job, Setting = set }); 
                             }
                         }
                     }

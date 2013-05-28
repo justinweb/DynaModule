@@ -20,14 +20,23 @@ namespace DynaModuleImpl
         #endregion
     }
 
-    public class DynaModuleSettingA : IDynaModuleSetting
-    {
-        public bool IsLoad
-        {
-            get;
-            set;
-        }
+    //public class DynaModuleSettingA : IDynaModuleSetting
+    //{
+    //    public bool IsLoad
+    //    {
+    //        get;
+    //        set;
+    //    }
 
+    //    public string ServiceCode
+    //    {
+    //        get;
+    //        set;
+    //    }
+    //}
+
+    public class DynaModuleSettingA
+    {
         public string ServiceCode
         {
             get;
@@ -35,22 +44,24 @@ namespace DynaModuleImpl
         }
     }
 
-    public class DynaModuleALoader : IDynaModuleSettingLoader
+    public class DynaModuleALoader : IDynaModuleSettingLoader<DynaModuleSettingA> 
     {
         #region IDynaModuleSettingLoader<TSetting> 成員
 
-        public IEnumerable<IDynaModuleSetting> LoadFromFile(string file)
+        public IEnumerable<DynaModuleSettingA> LoadFromFile(string file)
         {
             DynaModuleSettingPool<DynaModuleSettingA> pool = XmlHelper.Load<DynaModuleSettingPool<DynaModuleSettingA>>(file);
 
             if (pool == null)
                 return null;
 
-            // .NET 4.0 可能可以用Covariance方式直接傳回
-            List<IDynaModuleSetting> tmp = new List<IDynaModuleSetting>();
-            foreach( IDynaModuleSetting set in pool.Settings )
-                tmp.Add(set); 
-            return tmp;
+            //// .NET 4.0 可能可以用Covariance方式直接傳回
+            //List<IDynaModuleSetting> tmp = new List<IDynaModuleSetting>();
+            //foreach( IDynaModuleSetting set in pool.Settings )
+            //    tmp.Add(set); 
+            //return tmp;
+
+            return pool.Settings;
         }
 
         #endregion
