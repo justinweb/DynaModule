@@ -49,19 +49,19 @@ namespace KGI.TW.Der.DynaModuleBase
         }
     }
 
-    /// <summary>
-    /// 支援動態載入模組的介面
-    /// </summary>
-    public interface IDynaModule
-    {
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        /// <param name="setting">設定檔</param>
-        /// <param name="msg">錯誤訊息</param>
-        /// <returns>成功與否</returns>
-        bool Init(IDynaModuleSetting setting, ref string msg);
-    }
+    ///// <summary>
+    ///// 支援動態載入模組的介面
+    ///// </summary>
+    //public interface IDynaModule
+    //{
+    //    /// <summary>
+    //    /// 初始化
+    //    /// </summary>
+    //    /// <param name="setting">設定檔</param>
+    //    /// <param name="msg">錯誤訊息</param>
+    //    /// <returns>成功與否</returns>
+    //    bool Init(IDynaModuleSetting setting, ref string msg);
+    //}
 
     /// <summary>
     /// 動態載入模組的設定值

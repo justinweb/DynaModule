@@ -14,10 +14,10 @@ namespace DynaModuleUT
             //DynaModuleALoader loader = new DynaModuleALoader();
             //bool isLoader = loader is IDynaModuleSettingLoader<DynaModuleSettingA>;  
 
-            //UT_DynaModule();
+            UT_DynaModule();
 
-            GeneralPlugin.SavePluginSet();
-            List<DynaModuleInfo<IModule, MyPluginSet>> result = GeneralPlugin.LoadPluginSet<MyPluginSet, IModule>("MyPlugIn.xml");
+            //GeneralPlugin.SavePluginSet();
+            //List<DynaModuleInfo<IModule, MyPluginSet>> result = GeneralPlugin.LoadPluginSet<MyPluginSet, IModule>("MyPlugIn.xml");
         }
 
         public static void UT_DynaModule()
@@ -40,7 +40,12 @@ namespace DynaModuleUT
             PluginInfo pi1 = new PluginInfo() { AssemblyFile = "DynaModuleImpl.dll", CreateType = "DynaModuleImpl.DynaModuleA", SettingLoaderType = "DynaModuleImpl.DynaModuleALoader", SettingFile = "TmpSetting.xml" };
 
             string errMsg = "";
+            // 如果能知道最終型別的話，就使用最終型別作為泛型參數來呼叫
             List<DynaModuleInfo<DynaModuleA, DynaModuleSettingA>> result = DynaModuleManager.LoadModuleInfo<DynaModuleA, DynaModuleSettingA>(pi1, ref errMsg );   
+
+            // 如果不知最終型別的話(可能是PlugIn的外掛模組)，就用基底介面作為泛型參數來呼叫
+            // 這時SettingLoaderType必須是繼承自IDynaModuleSettingLoader<TSetting>的
+            List<DynaModuleInfo<IModule, ISetting>> resultBase = DynaModuleManager.LoadModuleInfo<IModule, ISetting>(pi1, ref errMsg);  
         }       
     }
 }

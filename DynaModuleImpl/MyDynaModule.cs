@@ -7,17 +7,25 @@ using KGI.TW.Der.DynaModuleBase;
 namespace DynaModuleImpl
 {
     #region 實作DynaModule
-    public class DynaModuleA : IDynaModule
+    //public class DynaModuleA : IDynaModule
+    //{
+    //    #region IDynaModule 成員
+
+    //    public bool Init(IDynaModuleSetting setting, ref string msg)
+    //    {
+    //        msg = "Test Error";
+    //        return true;
+    //    }
+
+    //    #endregion
+    //}
+
+    public interface IModule
     {
-        #region IDynaModule 成員
+    }
 
-        public bool Init(IDynaModuleSetting setting, ref string msg)
-        {
-            msg = "Test Error";
-            return true;
-        }
-
-        #endregion
+    public class DynaModuleA : IModule
+    {
     }
 
     //public class DynaModuleSettingA : IDynaModuleSetting
@@ -35,7 +43,11 @@ namespace DynaModuleImpl
     //    }
     //}
 
-    public class DynaModuleSettingA
+    public interface ISetting
+    {
+    }
+
+    public class DynaModuleSettingA : ISetting
     {
         public string ServiceCode
         {
