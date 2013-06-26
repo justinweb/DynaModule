@@ -77,7 +77,7 @@ namespace DynaModuleImpl
         }
 
         #endregion
-    }    
+    }   
 
     #endregion
 }

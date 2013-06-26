@@ -49,33 +49,18 @@ namespace KGI.TW.Der.DynaModuleBase
         }
     }
 
-    ///// <summary>
-    ///// 支援動態載入模組的介面
-    ///// </summary>
-    //public interface IDynaModule
-    //{
-    //    /// <summary>
-    //    /// 初始化
-    //    /// </summary>
-    //    /// <param name="setting">設定檔</param>
-    //    /// <param name="msg">錯誤訊息</param>
-    //    /// <returns>成功與否</returns>
-    //    bool Init(IDynaModuleSetting setting, ref string msg);
-    //}
-
     /// <summary>
-    /// 動態載入模組的設定值
+    /// 設定檔載入器
+    /// 因為要載入的設定檔實際型別是在未來實作端才知道的，所以提供實作的人需要實作一個載入實際設定檔型別的載入器
     /// </summary>
-    public interface IDynaModuleSetting
-    {
-        bool IsLoad
-        {
-            get;
-        }
-    }
-
+    /// <typeparam name="TSetting"></typeparam>
     public interface IDynaModuleSettingLoader<TSetting>
     {
+        /// <summary>
+        /// 由指定的檔案(通常是份xml檔)載入實際的設定檔
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
         IEnumerable<TSetting> LoadFromFile(string file); 
     }
     /// <summary>
